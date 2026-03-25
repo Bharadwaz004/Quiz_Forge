@@ -1,0 +1,107 @@
+version: "3.9"
+
+services:
+  # ────────────────────────────────────────────
+  # MongoDB — primary database
+  # ────────────────────────────────────────────
+  mongo:
+    image: mongo:7
+    container_name: quiz-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ────────────────────────────────────────────
+  # Redis — optional caching / pub-sub
+  # ────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: quiz-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ────────────────────────────────────────────
+  # AI Service — RAG engine (FastAPI)
+  # ────────────────────────────────────────────
+  ai-service:
+    build:
+      context: ./ai-service
+      dockerfile: Dockerfile
+    container_name: quiz-ai-service
+    ports:
+      - "8001:8001"
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8001
+      - EMBEDDING_MODEL=all-MiniLM-L6-v2
+      - LLM_MODEL=TinyLlama/TinyLlama-1.1B-Chat-v1.0
+      - LLM_DEVICE=cpu
+      - CHUNK_SIZE=512
+      - CHUNK_OVERLAP=64
+      - RETRIEVAL_TOP_K=5
+    volumes:
+      - ai_uploads:/app/uploads
+      - ai_chroma:/app/chroma_data
+      - huggingface_cache:/root/.cache/huggingface
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+    restart: unless-stopped
+
+  # ────────────────────────────────────────────
+  # Main Backend — sessions + leaderboard (FastAPI + Socket.IO)
+  # ────────────────────────────────────────────
+  main-backend:
+    build:
+      context: ./main-backend
+      dockerfile: Dockerfile
+    container_name: quiz-main-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8000
+      - MONGO_URI=mongodb://mongo:27017
+      - MONGO_DB_NAME=quiz_platform
+      - AI_SERVICE_URL=http://ai-service:8001
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      mongo:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      ai-service:
+        condition: service_started
+    restart: unless-stopped
+
+  # ────────────────────────────────────────────
+  # Frontend — React SPA via nginx
+  # ────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: quiz-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - main-backend
+    restart: unless-stopped
+
+volumes:
+  mongo_data:
+  ai_uploads:
+  ai_chroma:
+  huggingface_cache:

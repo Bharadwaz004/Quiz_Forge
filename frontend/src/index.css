@@ -1,0 +1,73 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    min-height: 100vh;
+    background-color: #0f0e0c;
+    background-image:
+      radial-gradient(ellipse at 20% 0%, rgba(232, 93, 38, 0.06) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 100%, rgba(232, 93, 38, 0.04) 0%, transparent 50%);
+  }
+
+  ::selection {
+    background-color: rgba(232, 93, 38, 0.3);
+    color: #f8f7f4;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(204, 201, 184, 0.2);
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(204, 201, 184, 0.4);
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply px-6 py-3 bg-accent text-white font-display font-semibold rounded-lg
+           transition-all duration-200
+           hover:bg-accent-dark hover:shadow-lg hover:shadow-accent/20
+           active:scale-[0.98]
+           disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:shadow-none disabled:active:scale-100;
+  }
+
+  .btn-secondary {
+    @apply px-6 py-3 border border-surface-300/20 text-surface-200 font-display font-medium rounded-lg
+           transition-all duration-200
+           hover:border-surface-300/40 hover:bg-surface-900
+           active:scale-[0.98];
+  }
+
+  .card {
+    @apply bg-surface-900/80 border border-surface-300/10 rounded-2xl backdrop-blur-sm;
+  }
+
+  .input-field {
+    @apply w-full px-4 py-3 bg-surface-950 border border-surface-300/15 rounded-lg
+           text-surface-100 font-body placeholder:text-surface-300/50
+           focus:outline-none focus:border-accent/50 focus:ring-1 focus:ring-accent/20
+           transition-all duration-200;
+  }
+
+  .label {
+    @apply block text-sm font-display font-medium text-surface-300 mb-2;
+  }
+
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-display font-medium;
+  }
+}

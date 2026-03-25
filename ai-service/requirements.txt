@@ -1,0 +1,24 @@
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
+python-multipart==0.0.9
+pydantic-settings==2.5.2
+
+# PDF processing
+PyPDF2==3.0.1
+
+# LangChain text splitting
+langchain-text-splitters==0.3.0
+
+# Vector store
+chromadb==0.5.7
+
+# Embeddings
+sentence-transformers==3.1.1
+
+# LLM (Qwen2.5-3B-Instruct — local)
+transformers>=4.37.0
+torch>=2.1.0
+accelerate>=0.26.0
+
+# Utilities
+numpy>=1.26.0
