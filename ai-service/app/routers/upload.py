@@ -3,6 +3,7 @@ Upload Router — handles PDF upload, text extraction, and vector storage.
 """
 
 import uuid
+import os
 import logging
 from fastapi import APIRouter, UploadFile, File, HTTPException
 
@@ -65,6 +66,14 @@ async def upload_document(file: UploadFile = File(...)):
         num_stored = vs.store_chunks(session_id, chunks)
 
         logger.info(f"Upload complete: session={session_id}, chunks={num_stored}")
+
+        # Cleanup: delete PDF file — text is already extracted and embedded
+        try:
+            os.remove(file_path)
+            print(f"[CLEANUP] Deleted PDF: {file_path}")
+        except OSError as e:
+            print(f"[CLEANUP] Could not delete PDF: {e}")
+
         return UploadResponse(
             session_id=session_id,
             filename=file.filename,
